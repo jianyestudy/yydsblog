@@ -1,6 +1,6 @@
 +++
 date = '2025-04-18T14:26:53+08:00'
-draft = true
+draft = false
 title = 'Nginx/Openresty 不仅仅可以缓存到磁盘，还可以利用 linux cache page 进行内存缓存'
 tags = ["nginx", "linux", "cache", "memory cache", "linux cache page", "nginx cache", "openresty cache"]
 categories = ["linux", "nginx"]
