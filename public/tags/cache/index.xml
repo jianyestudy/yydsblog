@@ -2,18 +2,18 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
     <channel>
         <title>Cache on yyds博客</title>
-        <link>http://localhost:1313/tags/cache/</link>
+        <link>https://yuland.xyz/tags/cache/</link>
         <description>Recent content in Cache on yyds博客</description>
         <generator>Hugo -- gohugo.io</generator>
         <language>zh-cn</language>
         <copyright>2025</copyright>
-        <lastBuildDate>Fri, 18 Apr 2025 14:26:53 +0800</lastBuildDate><atom:link href="http://localhost:1313/tags/cache/index.xml" rel="self" type="application/rss+xml" /><item>
+        <lastBuildDate>Fri, 18 Apr 2025 14:26:53 +0800</lastBuildDate><atom:link href="https://yuland.xyz/tags/cache/index.xml" rel="self" type="application/rss+xml" /><item>
         <title>Nginx/Openresty 不仅仅可以缓存到磁盘，还可以利用 linux cache page 进行内存缓存</title>
-        <link>http://localhost:1313/p/nginx-openresty-cache-linux-cache-page/</link>
+        <link>https://yuland.xyz/p/nginx-openresty-cache-linux-cache-page/</link>
         <pubDate>Fri, 18 Apr 2025 14:26:53 +0800</pubDate>
         
-        <guid>http://localhost:1313/p/nginx-openresty-cache-linux-cache-page/</guid>
-        <description>&lt;img src="http://localhost:1313/p/nginx-openresty-cache-linux-cache-page/nginx-1024x344.webp" alt="Featured image of post Nginx/Openresty 不仅仅可以缓存到磁盘，还可以利用 linux cache page 进行内存缓存" /&gt;&lt;p&gt;&lt;img src=&#34;http://localhost:1313/p/nginx-openresty-cache-linux-cache-page/bg.svg&#34;
+        <guid>https://yuland.xyz/p/nginx-openresty-cache-linux-cache-page/</guid>
+        <description>&lt;img src="https://yuland.xyz/p/nginx-openresty-cache-linux-cache-page/nginx-1024x344.webp" alt="Featured image of post Nginx/Openresty 不仅仅可以缓存到磁盘，还可以利用 linux cache page 进行内存缓存" /&gt;&lt;p&gt;&lt;img src=&#34;https://yuland.xyz/p/nginx-openresty-cache-linux-cache-page/bg.svg&#34;
 	
 	
 	
@@ -30,7 +30,7 @@
 &lt;hr&gt;
 &lt;h2 id=&#34;linux-page-cache-原理&#34;&gt;Linux Page Cache 原理
 &lt;/h2&gt;&lt;p&gt;Linux Page Cache 最初是 Buffer/Page Cache，后来迭代为统一的 Page Cache。下图展示了 Page Cache 在系统架构中的位置：&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;http://localhost:1313/p/nginx-openresty-cache-linux-cache-page/page-cache-arch.svg&#34;
+&lt;p&gt;&lt;img src=&#34;https://yuland.xyz/p/nginx-openresty-cache-linux-cache-page/page-cache-arch.svg&#34;
 	
 	
 	
@@ -54,7 +54,7 @@
 &lt;blockquote&gt;
 &lt;p&gt;磁盘 → 内核缓冲区 → Socket 缓冲区 → 网络&lt;/p&gt;&lt;/blockquote&gt;
 &lt;p&gt;跳过用户空间拷贝，显著减少 CPU 和内存开销。&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;http://localhost:1313/p/nginx-openresty-cache-linux-cache-page/sendfile-comparison.svg&#34;
+&lt;p&gt;&lt;img src=&#34;https://yuland.xyz/p/nginx-openresty-cache-linux-cache-page/sendfile-comparison.svg&#34;
 	
 	
 	
@@ -127,7 +127,7 @@
 &lt;/div&gt;
 &lt;/div&gt;&lt;h3 id=&#34;实测效果&#34;&gt;实测效果
 &lt;/h3&gt;&lt;p&gt;从下面这张截图可以看出（&lt;code&gt;/var/auth-cdn/cache&lt;/code&gt; 为节点的缓存目录）：&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;http://localhost:1313/p/nginx-openresty-cache-linux-cache-page/vmtouch-stats.svg&#34;
+&lt;p&gt;&lt;img src=&#34;https://yuland.xyz/p/nginx-openresty-cache-linux-cache-page/vmtouch-stats.svg&#34;
 	
 	
 	
@@ -158,7 +158,7 @@
 &lt;hr&gt;
 &lt;h2 id=&#34;page-cache-淘汰策略&#34;&gt;Page Cache 淘汰策略
 &lt;/h2&gt;&lt;p&gt;Linux 的 Page Cache 使用改良版的 LRU 算法作为淘汰算法，不同于传统意义上的 LRU，其中加入了一些优化。&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;http://localhost:1313/p/nginx-openresty-cache-linux-cache-page/lru-strategy.svg&#34;
+&lt;p&gt;&lt;img src=&#34;https://yuland.xyz/p/nginx-openresty-cache-linux-cache-page/lru-strategy.svg&#34;
 	
 	
 	

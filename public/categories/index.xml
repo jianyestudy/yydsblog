@@ -2,34 +2,34 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
     <channel>
         <title>Categories on yyds博客</title>
-        <link>http://localhost:1313/categories/</link>
+        <link>https://yuland.xyz/categories/</link>
         <description>Recent content in Categories on yyds博客</description>
         <generator>Hugo -- gohugo.io</generator>
         <language>zh-cn</language>
         <copyright>2025</copyright>
-        <lastBuildDate>Fri, 18 Apr 2025 14:26:53 +0800</lastBuildDate><atom:link href="http://localhost:1313/categories/index.xml" rel="self" type="application/rss+xml" /><item>
+        <lastBuildDate>Fri, 18 Apr 2025 14:26:53 +0800</lastBuildDate><atom:link href="https://yuland.xyz/categories/index.xml" rel="self" type="application/rss+xml" /><item>
         <title>Linux</title>
-        <link>http://localhost:1313/categories/linux/</link>
+        <link>https://yuland.xyz/categories/linux/</link>
         <pubDate>Fri, 18 Apr 2025 14:26:53 +0800</pubDate>
         
-        <guid>http://localhost:1313/categories/linux/</guid>
+        <guid>https://yuland.xyz/categories/linux/</guid>
         <description></description>
         </item>
         <item>
         <title>Nginx</title>
-        <link>http://localhost:1313/categories/nginx/</link>
+        <link>https://yuland.xyz/categories/nginx/</link>
         <pubDate>Fri, 18 Apr 2025 14:26:53 +0800</pubDate>
         
-        <guid>http://localhost:1313/categories/nginx/</guid>
+        <guid>https://yuland.xyz/categories/nginx/</guid>
         <description></description>
         </item>
         <item>
         <title>Test</title>
-        <link>http://localhost:1313/categories/test/</link>
+        <link>https://yuland.xyz/categories/test/</link>
         <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
         
-        <guid>http://localhost:1313/categories/test/</guid>
-        <description>&lt;img src="http://localhost:1313/categories/test/hutomo-abrianto-l2jk-uxb1BY-unsplash.jpg" alt="Featured image of post Test" /&gt;</description>
+        <guid>https://yuland.xyz/categories/test/</guid>
+        <description>&lt;img src="https://yuland.xyz/categories/test/hutomo-abrianto-l2jk-uxb1BY-unsplash.jpg" alt="Featured image of post Test" /&gt;</description>
         </item>
         
     </channel>
