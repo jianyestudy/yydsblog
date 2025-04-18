@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+    <channel>
+        <title>Tags on yyds博客</title>
+        <link>http://localhost:1313/tags/</link>
+        <description>Recent content in Tags on yyds博客</description>
+        <generator>Hugo -- gohugo.io</generator>
+        <language>zh-cn</language>
+        <copyright>2025</copyright>
+        <lastBuildDate>Fri, 18 Apr 2025 14:26:53 +0800</lastBuildDate><atom:link href="http://localhost:1313/tags/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>Cache</title>
+        <link>http://localhost:1313/tags/cache/</link>
+        <pubDate>Fri, 18 Apr 2025 14:26:53 +0800</pubDate>
+        
+        <guid>http://localhost:1313/tags/cache/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>Linux</title>
+        <link>http://localhost:1313/tags/linux/</link>
+        <pubDate>Fri, 18 Apr 2025 14:26:53 +0800</pubDate>
+        
+        <guid>http://localhost:1313/tags/linux/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>Linux Cache Page</title>
+        <link>http://localhost:1313/tags/linux-cache-page/</link>
+        <pubDate>Fri, 18 Apr 2025 14:26:53 +0800</pubDate>
+        
+        <guid>http://localhost:1313/tags/linux-cache-page/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>Memory Cache</title>
+        <link>http://localhost:1313/tags/memory-cache/</link>
+        <pubDate>Fri, 18 Apr 2025 14:26:53 +0800</pubDate>
+        
+        <guid>http://localhost:1313/tags/memory-cache/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>Nginx</title>
+        <link>http://localhost:1313/tags/nginx/</link>
+        <pubDate>Fri, 18 Apr 2025 14:26:53 +0800</pubDate>
+        
+        <guid>http://localhost:1313/tags/nginx/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>Nginx Cache</title>
+        <link>http://localhost:1313/tags/nginx-cache/</link>
+        <pubDate>Fri, 18 Apr 2025 14:26:53 +0800</pubDate>
+        
+        <guid>http://localhost:1313/tags/nginx-cache/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>Openresty Cache</title>
+        <link>http://localhost:1313/tags/openresty-cache/</link>
+        <pubDate>Fri, 18 Apr 2025 14:26:53 +0800</pubDate>
+        
+        <guid>http://localhost:1313/tags/openresty-cache/</guid>
+        <description></description>
+        </item>
+        
+    </channel>
+</rss>

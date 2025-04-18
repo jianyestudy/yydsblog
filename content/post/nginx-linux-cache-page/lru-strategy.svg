@@ -1,0 +1,59 @@
+<svg width="100%" height="300" viewBox="0 0 800 300" xmlns="http://www.w3.org/2000/svg">
+  <!-- 背景 -->
+  <rect width="100%" height="100%" fill="#f5f5f5" rx="10" ry="10"/>
+  
+  <!-- 标题 -->
+  <text x="400" y="30" font-family="Arial" font-size="16" font-weight="bold" fill="#333" text-anchor="middle">Linux Page Cache 改良版 LRU 算法</text>
+  
+  <!-- 活跃列表(热表) -->
+  <rect x="150" y="70" width="200" height="180" fill="#e1f5fe" stroke="#0288d1" stroke-width="2" rx="5" ry="5"/>
+  <text x="250" y="60" font-family="Arial" font-size="14" font-weight="bold" fill="#01579b" text-anchor="middle">活跃列表 (Active List)</text>
+  
+  <!-- 非活跃列表(冷表) -->
+  <rect x="450" y="70" width="200" height="180" fill="#ffebee" stroke="#c62828" stroke-width="2" rx="5" ry="5"/>
+  <text x="550" y="60" font-family="Arial" font-size="14" font-weight="bold" fill="#b71c1c" text-anchor="middle">非活跃列表 (Inactive List)</text>
+  
+  <!-- 活跃列表中的页面 -->
+  <rect x="170" y="90" width="160" height="30" fill="#29b6f6" stroke="#0288d1" stroke-width="1" rx="3" ry="3"/>
+  <text x="250" y="110" font-family="Arial" font-size="12" fill="white" text-anchor="middle">热页面 1 (频繁访问)</text>
+  
+  <rect x="170" y="130" width="160" height="30" fill="#29b6f6" stroke="#0288d1" stroke-width="1" rx="3" ry="3"/>
+  <text x="250" y="150" font-family="Arial" font-size="12" fill="white" text-anchor="middle">热页面 2</text>
+  
+  <rect x="170" y="170" width="160" height="30" fill="#29b6f6" stroke="#0288d1" stroke-width="1" rx="3" ry="3"/>
+  <text x="250" y="190" font-family="Arial" font-size="12" fill="white" text-anchor="middle">热页面 3</text>
+  
+  <rect x="170" y="210" width="160" height="30" fill="#29b6f6" stroke="#0288d1" stroke-width="1" rx="3" ry="3"/>
+  <text x="250" y="230" font-family="Arial" font-size="12" fill="white" text-anchor="middle">热页面 4</text>
+  
+  <!-- 非活跃列表中的页面 -->
+  <rect x="470" y="90" width="160" height="30" fill="#ef5350" stroke="#c62828" stroke-width="1" rx="3" ry="3"/>
+  <text x="550" y="110" font-family="Arial" font-size="12" fill="white" text-anchor="middle">冷页面 1</text>
+  
+  <rect x="470" y="130" width="160" height="30" fill="#ef9a9a" stroke="#c62828" stroke-width="1" rx="3" ry="3"/>
+  <text x="550" y="150" font-family="Arial" font-size="12" fill="white" text-anchor="middle">冷页面 2 (即将被淘汰)</text>
+  
+  <rect x="470" y="170" width="160" height="30" fill="#ef5350" stroke="#c62828" stroke-width="1" rx="3" ry="3"/>
+  <text x="550" y="190" font-family="Arial" font-size="12" fill="white" text-anchor="middle">冷页面 3</text>
+  
+  <rect x="470" y="210" width="160" height="30" fill="#ef5350" stroke="#c62828" stroke-width="1" rx="3" ry="3"/>
+  <text x="550" y="230" font-family="Arial" font-size="12" fill="white" text-anchor="middle">冷页面 4</text>
+  
+  <!-- 箭头标记 -->
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#333"/>
+    </marker>
+  </defs>
+  
+  <!-- 冷热迁移箭头 -->
+  <path d="M350 120 L450 120" stroke="#333" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+  <text x="400" y="110" font-family="Arial" font-size="12" fill="#333" text-anchor="middle">降温</text>
+  
+  <path d="M450 180 L350 180" stroke="#333" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+  <text x="400" y="170" font-family="Arial" font-size="12" fill="#333" text-anchor="middle">升温</text>
+  
+  <!-- 淘汰箭头 -->
+  <path d="M550 270 L550 255" stroke="#f44336" stroke-width="2" stroke-dasharray="5,3" fill="none"/>
+  <text x="550" y="285" font-family="Arial" font-size="14" fill="#f44336" text-anchor="middle">优先淘汰冷表中的数据</text>
+</svg> 

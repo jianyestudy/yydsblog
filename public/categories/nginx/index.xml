@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+    <channel>
+        <title>Nginx on yyds博客</title>
+        <link>http://localhost:1313/categories/nginx/</link>
+        <description>Recent content in Nginx on yyds博客</description>
+        <generator>Hugo -- gohugo.io</generator>
+        <language>zh-cn</language>
+        <copyright>2025</copyright>
+        <lastBuildDate>Fri, 18 Apr 2025 14:26:53 +0800</lastBuildDate><atom:link href="http://localhost:1313/categories/nginx/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>Nginx/Openresty 不仅仅可以缓存到磁盘，还可以利用 linux cache page 进行内存缓存</title>
+        <link>http://localhost:1313/p/nginx-openresty-cache-linux-cache-page/</link>
+        <pubDate>Fri, 18 Apr 2025 14:26:53 +0800</pubDate>
+        
+        <guid>http://localhost:1313/p/nginx-openresty-cache-linux-cache-page/</guid>
+        <description>&lt;img src="http://localhost:1313/p/nginx-openresty-cache-linux-cache-page/nginx-1024x344.webp" alt="Featured image of post Nginx/Openresty 不仅仅可以缓存到磁盘，还可以利用 linux cache page 进行内存缓存" /&gt;&lt;p&gt;&lt;img src=&#34;http://localhost:1313/p/nginx-openresty-cache-linux-cache-page/bg.svg&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;bg.svg&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h2 id=&#34;简介&#34;&gt;简介
+&lt;/h2&gt;&lt;p&gt;Nginx 虽然没有提供将文件直接缓存到内存中的能力，但在实际运行过程中，内存确实在缓存中发挥了重要作用。经过调研和排查，我们证实了磁盘中的缓存文件被 Linux 的 buffer/page cache 缓存了。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;关键信息&lt;/strong&gt;：在 Nginx 中，默认情况下就会利用操作系统的 Page Cache（通过内核的文件缓存机制），无需特殊配置即可自动缓存频繁访问的静态文件。&lt;/p&gt;&lt;/blockquote&gt;
+&lt;hr&gt;
+&lt;h2 id=&#34;linux-page-cache-原理&#34;&gt;Linux Page Cache 原理
+&lt;/h2&gt;&lt;p&gt;Linux Page Cache 最初是 Buffer/Page Cache，后来迭代为统一的 Page Cache。下图展示了 Page Cache 在系统架构中的位置：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://localhost:1313/p/nginx-openresty-cache-linux-cache-page/page-cache-arch.svg&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;Linux Page Cache 在系统架构中的位置&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;架构说明&lt;/strong&gt;：Page Cache 完全位于内核层中，与 VFS（Virtual Filesystem，虚拟文件系统）处于同一抽象层。它属于内核空间，不属于用户空间。&lt;/p&gt;&lt;/blockquote&gt;
+&lt;hr&gt;
+&lt;h2 id=&#34;nginx-中的核心配置&#34;&gt;Nginx 中的核心配置
+&lt;/h2&gt;&lt;p&gt;要充分利用 Linux Page Cache，Nginx 中有三个核心配置选项：&lt;/p&gt;
+&lt;h3 id=&#34;sendfile&#34;&gt;sendfile
+&lt;/h3&gt;&lt;p&gt;传统文件传输路径：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;磁盘 → 内核缓冲区 → 用户空间 → Socket 缓冲区 → 网络&lt;/p&gt;&lt;/blockquote&gt;
+&lt;p&gt;存在多次数据拷贝操作。&lt;/p&gt;
+&lt;p&gt;启用 sendfile 后：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;磁盘 → 内核缓冲区 → Socket 缓冲区 → 网络&lt;/p&gt;&lt;/blockquote&gt;
+&lt;p&gt;跳过用户空间拷贝，显著减少 CPU 和内存开销。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://localhost:1313/p/nginx-openresty-cache-linux-cache-page/sendfile-comparison.svg&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;sendfile 工作原理&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;优化提示&lt;/strong&gt;：sendfile 通常与 tcp_nopush 搭配使用，填充数据包再发送，进一步提高传输效率。&lt;/p&gt;&lt;/blockquote&gt;
+&lt;h3 id=&#34;aio-异步-io&#34;&gt;aio (异步 I/O)
+&lt;/h3&gt;&lt;p&gt;通过内核异步 I/O 或线程池（Linux）非阻塞处理文件，避免 Worker 进程阻塞。&lt;/p&gt;
+&lt;h3 id=&#34;directio&#34;&gt;directio
+&lt;/h3&gt;&lt;p&gt;绕过内核缓存直接读写磁盘（需配置 directio 指令），特别适合大文件处理。&lt;/p&gt;
+&lt;hr&gt;
+&lt;h3 id=&#34;最佳实践&#34;&gt;最佳实践
+&lt;/h3&gt;&lt;p&gt;通过在 Nginx 上搭配使用以上三个核心配置，可以实现：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;小文件/热文件&lt;/strong&gt;：从内核缓存区直接读取（page cache 位于内核缓冲区）&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;大文件&lt;/strong&gt;：直接从磁盘读取，防止文件过大带来的额外内存挤占&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr&gt;
+&lt;h2 id=&#34;示例配置&#34;&gt;示例配置
+&lt;/h2&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;7
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-nginx&#34; data-lang=&#34;nginx&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;k&#34;&gt;http&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;kn&#34;&gt;sendfile&lt;/span&gt; &lt;span class=&#34;no&#34;&gt;on&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;       
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;kn&#34;&gt;tcp_nopush&lt;/span&gt; &lt;span class=&#34;no&#34;&gt;on&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;kn&#34;&gt;directio&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;4m&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;    &lt;span class=&#34;c1&#34;&gt;# 仅对超过 4MB 的文件启用 DirectIO（绕过 Page Cache）
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;    &lt;span class=&#34;kn&#34;&gt;aio&lt;/span&gt; &lt;span class=&#34;no&#34;&gt;on&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;         &lt;span class=&#34;c1&#34;&gt;# 异步读取（可选，Linux 下依赖线程池）
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h2 id=&#34;验证工具vmtouch&#34;&gt;验证工具：vmtouch
+&lt;/h2&gt;&lt;p&gt;vmtouch 是一个可以查看内存缓存情况的实用工具。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;安装方法&lt;/strong&gt;：&lt;/p&gt;&lt;/blockquote&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;8
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# 克隆仓库&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;git clone https://github.com/hoytech/vmtouch.git
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# 执行编译安装&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nb&#34;&gt;cd&lt;/span&gt; vmtouch &lt;span class=&#34;o&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; make &lt;span class=&#34;o&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; make install
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# 查看缓存的具体文件&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;vmtouch -v /var/auth-cdn/cache
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h3 id=&#34;实测效果&#34;&gt;实测效果
+&lt;/h3&gt;&lt;p&gt;从下面这张截图可以看出（&lt;code&gt;/var/auth-cdn/cache&lt;/code&gt; 为节点的缓存目录）：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://localhost:1313/p/nginx-openresty-cache-linux-cache-page/vmtouch-stats.svg&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;vmtouch 缓存统计&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h3 id=&#34;缓存统计结果&#34;&gt;缓存统计结果
+&lt;/h3&gt;&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;磁盘缓存目录&lt;/strong&gt;：2个文件，7个条目（包括目录）&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Page Cache 缓存&lt;/strong&gt;：84页内存（1页 = 4KB）&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;内存缓存总大小&lt;/strong&gt;：336KB&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;内存缓存率&lt;/strong&gt;：100%&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;测试数据说明&lt;/strong&gt;：
+这个数据来自测试环境，在 Nginx 上只配置了缓存这两个文件，所以缓存率能达到100%。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;生产环境数据&lt;/strong&gt;：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;缓存文件数量：约71万个&lt;/li&gt;
+&lt;li&gt;总大小：约600GB&lt;/li&gt;
+&lt;li&gt;内存缓存：约100GB+&lt;/li&gt;
+&lt;li&gt;缓存率：约15%（根据内存大小而定）&lt;/li&gt;
+&lt;/ul&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;更多验证方法&lt;/strong&gt;：更多排查命令，如 &lt;code&gt;top&lt;/code&gt;，&lt;code&gt;free&lt;/code&gt;，&lt;code&gt;cat /proc/meminfo&lt;/code&gt; 等都能印证磁盘缓存中的部分文件被缓存进了 Page Cache 中。&lt;/p&gt;&lt;/blockquote&gt;
+&lt;hr&gt;
+&lt;h2 id=&#34;page-cache-淘汰策略&#34;&gt;Page Cache 淘汰策略
+&lt;/h2&gt;&lt;p&gt;Linux 的 Page Cache 使用改良版的 LRU 算法作为淘汰算法，不同于传统意义上的 LRU，其中加入了一些优化。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://localhost:1313/p/nginx-openresty-cache-linux-cache-page/lru-strategy.svg&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;Linux Page Cache 改良版 LRU 算法&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;系统维护两个列表（Two-List LRU）：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;一个&amp;quot;&lt;strong&gt;热表&lt;/strong&gt;&amp;quot;（Active List）&lt;/li&gt;
+&lt;li&gt;一个&amp;quot;&lt;strong&gt;冷表&lt;/strong&gt;&amp;quot;（Inactive List）&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;淘汰策略是优先淘汰&amp;quot;冷表&amp;quot;中的数据。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;更多资料&lt;/strong&gt;：更多详细介绍可参考：&lt;a class=&#34;link&#34; href=&#34;https://www.kernel.org/doc/gorman/html/understand/understand013.html&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;Linux Memory Management&lt;/a&gt;&lt;/p&gt;&lt;/blockquote&gt;
+</description>
+        </item>
+        
+    </channel>
+</rss>

@@ -1,0 +1,65 @@
+<svg width="100%" height="400" viewBox="0 0 900 400" xmlns="http://www.w3.org/2000/svg">
+  <!-- 背景 -->
+  <rect width="100%" height="100%" fill="#f8f9fa" rx="10" ry="10"/>
+  
+  <!-- 标题 -->
+  <text x="450" y="30" font-family="Arial" font-size="18" font-weight="bold" fill="#333" text-anchor="middle">文件传输对比: 传统 vs sendfile</text>
+  
+  <!-- 分隔线 -->
+  <line x1="450" y1="50" x2="450" y2="380" stroke="#ddd" stroke-width="2" stroke-dasharray="5,5"/>
+  <text x="225" y="60" font-family="Arial" font-size="16" fill="#d32f2f" text-anchor="middle">传统传输方式</text>
+  <text x="675" y="60" font-family="Arial" font-size="16" fill="#388e3c" text-anchor="middle">使用 sendfile</text>
+  
+  <!-- 传统方式 -->
+  <!-- 磁盘 -->
+  <rect x="100" y="90" width="250" height="50" fill="#ffe0b2" stroke="#fb8c00" stroke-width="2" rx="5" ry="5"/>
+  <text x="225" y="120" font-family="Arial" font-size="14" fill="#e65100" text-anchor="middle">磁盘</text>
+  
+  <!-- 内核缓冲区 -->
+  <rect x="100" y="170" width="250" height="50" fill="#c8e6c9" stroke="#388e3c" stroke-width="2" rx="5" ry="5"/>
+  <text x="225" y="200" font-family="Arial" font-size="14" fill="#1b5e20" text-anchor="middle">内核缓冲区</text>
+  
+  <!-- 用户空间 -->
+  <rect x="100" y="250" width="250" height="50" fill="#e1f5fe" stroke="#0288d1" stroke-width="2" rx="5" ry="5"/>
+  <text x="225" y="280" font-family="Arial" font-size="14" fill="#01579b" text-anchor="middle">用户空间 (Nginx进程)</text>
+  
+  <!-- Socket缓冲区 -->
+  <rect x="100" y="330" width="250" height="50" fill="#e0f7fa" stroke="#00acc1" stroke-width="2" rx="5" ry="5"/>
+  <text x="225" y="360" font-family="Arial" font-size="14" fill="#006064" text-anchor="middle">Socket缓冲区</text>
+  
+  <!-- 传统方式的箭头 -->
+  <path d="M225 140 L225 170" stroke="#d32f2f" stroke-width="3" fill="none" marker-end="url(#arrow1)"/>
+  <path d="M225 220 L225 250" stroke="#d32f2f" stroke-width="3" fill="none" marker-end="url(#arrow1)"/>
+  <path d="M225 300 L225 330" stroke="#d32f2f" stroke-width="3" fill="none" marker-end="url(#arrow1)"/>
+  
+  <!-- sendfile方式 -->
+  <!-- 磁盘 -->
+  <rect x="550" y="90" width="250" height="50" fill="#ffe0b2" stroke="#fb8c00" stroke-width="2" rx="5" ry="5"/>
+  <text x="675" y="120" font-family="Arial" font-size="14" fill="#e65100" text-anchor="middle">磁盘</text>
+  
+  <!-- 内核缓冲区 -->
+  <rect x="550" y="170" width="250" height="50" fill="#c8e6c9" stroke="#388e3c" stroke-width="2" rx="5" ry="5"/>
+  <text x="675" y="200" font-family="Arial" font-size="14" fill="#1b5e20" text-anchor="middle">内核缓冲区</text>
+  
+  <!-- Socket缓冲区 -->
+  <rect x="550" y="330" width="250" height="50" fill="#e0f7fa" stroke="#00acc1" stroke-width="2" rx="5" ry="5"/>
+  <text x="675" y="360" font-family="Arial" font-size="14" fill="#006064" text-anchor="middle">Socket缓冲区</text>
+  
+  <!-- sendfile方式的箭头 -->
+  <path d="M675 140 L675 170" stroke="#388e3c" stroke-width="3" fill="none" marker-end="url(#arrow2)"/>
+  <path d="M675 220 L675 330" stroke="#388e3c" stroke-width="3" fill="none" marker-end="url(#arrow2)"/>
+  
+  <!-- 箭头标记 -->
+  <defs>
+    <marker id="arrow1" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#d32f2f"/>
+    </marker>
+    <marker id="arrow2" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#388e3c"/>
+    </marker>
+  </defs>
+  
+  <!-- 注释 -->
+  <text x="225" y="390" font-family="Arial" font-size="12" fill="#d32f2f" text-anchor="middle">多次数据拷贝，性能损耗大</text>
+  <text x="675" y="390" font-family="Arial" font-size="12" fill="#388e3c" text-anchor="middle">直接数据传输，减少CPU和内存开销</text>
+</svg> 

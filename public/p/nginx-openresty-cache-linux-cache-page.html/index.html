@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="zh-cn" dir="ltr">
+    <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="nginx/openresty 下的内存缓存 与 linux cache page">
+<title>Nginx/Openresty 不仅仅可以缓存到磁盘，还可以利用 linux cache page 进行内存缓存</title>
+
+<link rel='canonical' href='http://localhost:1313/p/nginx-openresty-cache-linux-cache-page.html/'>
+
+<link rel="stylesheet" href="/scss/style.min.663803bebe609202d5b39d848f2d7c2dc8b598a2d879efa079fa88893d29c49c.css"><meta property='og:title' content="Nginx/Openresty 不仅仅可以缓存到磁盘，还可以利用 linux cache page 进行内存缓存">
+<meta property='og:description' content="nginx/openresty 下的内存缓存 与 linux cache page">
+<meta property='og:url' content='http://localhost:1313/p/nginx-openresty-cache-linux-cache-page.html/'>
+<meta property='og:site_name' content='yyds博客'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='nginx' /><meta property='article:tag' content='linux' /><meta property='article:tag' content='cache' /><meta property='article:tag' content='memory cache' /><meta property='article:tag' content='linux cache page' /><meta property='article:tag' content='nginx cache' /><meta property='article:tag' content='openresty cache' /><meta property='article:published_time' content='2025-04-18T14:26:53&#43;08:00'/><meta property='article:modified_time' content='2025-04-18T14:26:53&#43;08:00'/><meta property='og:image' content='http://localhost:1313/p/nginx-openresty-cache-linux-cache-page.html/nginx-1024x344.webp' />
+<meta name="twitter:title" content="Nginx/Openresty 不仅仅可以缓存到磁盘，还可以利用 linux cache page 进行内存缓存">
+<meta name="twitter:description" content="nginx/openresty 下的内存缓存 与 linux cache page"><meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content='http://localhost:1313/p/nginx-openresty-cache-linux-cache-page.html/nginx-1024x344.webp' />
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    <img src="../../img/logo.jpeg" width="300" height="300" class="site-logo" loading="lazy" alt="Avatar">
+                
+                </a>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">yyds博客</a></h1>
+            <h2 class="site-description">这里是yyd`s的个人博客</h2>
+        </div>
+    </header><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>主页</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/%E5%85%B3%E4%BA%8E/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>关于</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>归档</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>搜索</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/links/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" />
+  <path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" />
+</svg>
+
+
+
+                
+                <span>Links</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+                    
+                        <li id="i18n-switch">  
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-language" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M4 5h7" />
+  <path d="M9 3v2c0 4.418 -2.239 8 -5 8" />
+  <path d="M5 9c-.003 2.144 2.952 3.908 6.7 4" />
+  <path d="M12 20l4 -9l4 9" />
+  <path d="M19.1 18h-6.2" />
+</svg>
+
+
+
+                            <select name="language" title="language" onchange="window.location.href = this.selectedOptions[0].value">
+                                
+                                    <option value="http://localhost:1313/" selected>中文</option>
+                                
+                                    <option value="http://localhost:1313/en/" >English</option>
+                                
+                            </select>
+                        </li>
+                    
+                
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>暗色模式</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    
+
+            <main class="main full-width">
+    <article class="has-image main-article">
+    <header class="article-header">
+        <div class="article-image">
+            <a href="/p/nginx-openresty-cache-linux-cache-page.html/">
+                <img src="/p/nginx-openresty-cache-linux-cache-page.html/nginx-1024x344_hu_4d295166a5bd17ea.webp"
+                        srcset="/p/nginx-openresty-cache-linux-cache-page.html/nginx-1024x344_hu_4d295166a5bd17ea.webp 800w, /p/nginx-openresty-cache-linux-cache-page.html/nginx-1024x344_hu_f8c09227c22d9d3f.webp 1600w"
+                        width="800" 
+                        height="269" 
+                        loading="lazy"
+                        alt="Featured image of post Nginx/Openresty 不仅仅可以缓存到磁盘，还可以利用 linux cache page 进行内存缓存" />
+                
+            </a>
+        </div>
+    
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            <a href="/categories/linux/" >
+                Linux
+            </a>
+        
+            <a href="/categories/nginx/" >
+                Nginx
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/p/nginx-openresty-cache-linux-cache-page.html/">Nginx/Openresty 不仅仅可以缓存到磁盘，还可以利用 linux cache page 进行内存缓存</a>
+        </h2>
+    
+        
+        <h3 class="article-subtitle">
+            nginx/openresty 下的内存缓存 与 linux cache page
+        </h3>
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">2025-04-18 14:26:07 &#43;0800 CST</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    阅读时长: 1 分钟
+                </time>
+            </div>
+        
+    </footer>
+    
+
+    
+</div>
+
+</header>
+
+    <section class="article-content">
+    
+    
+    <p>Linux Page Cache
+尽管 Nginx 没有提供将文件缓存到内存中的直接能力，但是在 Nginx 中可以设置我们还是发现在实际运行过程中， 内存确实在缓存中发挥了其作用， 经过调研跟排查，证实了磁盘中的缓存文件， 被 Linux 的 buffer/page cache 缓存了。</p>
+<p>在 Nginx 中，默认情况下就会利用操作系统的 Page Cache（通过内核的文件缓存机制），无需特殊配置即可自动缓存频繁访问的静态文件。</p>
+<p>Linux Page Cache 最开始是  Buffer/Page Cache， 后面迭代为 Page cache。 从以下图中可以清楚的看到 Page Cache的位置。 Page Cache 完全位于内核层中，跟 VFS （Virtual Filesystem）一个虚拟文件系统的软件抽象层同一个位置。 属于内核不属于用户。</p>
+<p>前面提到的 fuse 就是位于 用户层的 实现了 vfs 的一种文件系统。</p>
+<p>核心配置：sendfile，aio，directio
+sendfile：传统文件传输是从数据需从磁盘→内核缓冲区→用户空间→Socket 缓冲区→网络，存在多次拷贝。使用了 sendfile 之后通过系统调用直接将文件从内核缓冲区传输到 Socket 缓冲区，跳过用户空间拷贝，减少 CPU 和内存开销。 ps： sendfile 通常与 tcp_nopush 搭配，填充数据包再发送。详见下图</p>
+<p>aio:            异步 I/O，通过内核异步 I/O 或线程池（Linux）非阻塞处理文件，避免 Worker 进程阻塞。 搭配 DirectIO：绕过内核缓存直接读写磁盘（需配置 directio），适合大文件。</p>
+<p>通过在 Nginx 上搭配使用以上三个核心配置，可以实现小文件热文件从内核缓存区直接读取（page cache位于内核缓冲区），大文件则直接从磁盘读取，防止文件过大带来的额外内存挤占。</p>
+<p>示例配置：
+http {
+sendfile on;    <br>
+tcp_nopush on;</p>
+<pre><code>directio 4m;    # 仅对超过 4MB 的文件启用 DirectIO（绕过 Page Cache）
+aio on;         # 异步读取（可选，Linux 下依赖线程池）
+</code></pre>
+<p>}</p>
+<p>vmtouch ：一个可以查看内存缓存的工具
+1
+2
+3
+4
+5
+6</p>
+<h1 id="克隆仓库">克隆仓库
+</h1><p>git clone <a class="link" href="https://github.com/hoytech/vmtouch.git"  target="_blank" rel="noopener"
+    >https://github.com/hoytech/vmtouch.git</a></p>
+<h1 id="执行编译安装">执行编译安装
+</h1><p>cd vmtouch &amp;&amp; make &amp;&amp; make install</p>
+<h1 id="查看缓存的具体文件">查看缓存的具体文件
+</h1><p>vmtouch -v /var/auth-cdn/cache</p>
+<p>从下面这张截图可以看出（ /var/auth-cdn/cache 为节点的缓存目录）：</p>
+<p>磁盘缓存目录中有两个文件 7 个条目 包括目录， 其中被 page cache 缓存的内存页有 84 页， 一页大小为 4KB， 已经在内存中缓存的大小为 336k， 总共的大小为 336k， 内存缓存率为 100%。</p>
+<p>这个数据为测试数据， 在 Nginx 上只配置了缓存这两个文件，所以缓存率能达到100%。</p>
+<p>经过实测， 在生产环境中， 一共有71万个缓存文件， 总大小为600GB左右， 内存缓存了 100多GB 缓存率为 15%（根据内存大小而定）</p>
+<p>更多排查的命令， 如 top， free， cat /proc/meminfo 等都能印证磁盘缓存中的部分文件 被缓存进了 page cache 中</p>
+<p>Page Cache 淘汰策略
+Linux 的 Page Cache 使用 LRU 算法为淘汰算法， 但是也不是传统意义上的 LRU 中间经过一些改良。 存在两个列表 two-list 一个“热表”， 一个“冷表”， 优先淘汰“冷表”中的数据。</p>
+<p>具体介绍的文章： <a class="link" href="https://www.kernel.org/doc/gorman/html/understand/understand013.html"  target="_blank" rel="noopener"
+    >https://www.kernel.org/doc/gorman/html/understand/understand013.html</a></p>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+    <section class="article-tags">
+        
+            <a href="/tags/nginx/">Nginx</a>
+        
+            <a href="/tags/linux/">Linux</a>
+        
+            <a href="/tags/cache/">Cache</a>
+        
+            <a href="/tags/memory-cache/">Memory Cache</a>
+        
+            <a href="/tags/linux-cache-page/">Linux Cache Page</a>
+        
+            <a href="/tags/nginx-cache/">Nginx Cache</a>
+        
+            <a href="/tags/openresty-cache/">Openresty Cache</a>
+        
+    </section>
+
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+        <link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"integrity="sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI&#43;WdtXRGWt2kTvGFasHpSy3SV"crossorigin="anonymous"
+            ><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"integrity="sha384-XjKyOOlGwcjNTAIQHIpgOno0Hl1YQqzUOEleOLALmuqehneUG&#43;vnGctmUb0ZY0l8"crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"integrity="sha384-&#43;VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4&#43;/RRE05"crossorigin="anonymous"
+                defer
+                >
+            </script><script>
+    window.addEventListener("DOMContentLoaded", () => {
+	const mainArticleElement = document.querySelector(".main-article");
+        renderMathInElement(mainArticleElement, {
+            delimiters: [
+                { left: "$$", right: "$$", display: true },
+                { left: "$", right: "$", display: false },
+                { left: "\\(", right: "\\)", display: false },
+                { left: "\\[", right: "\\]", display: true }
+            ],
+            ignoredClasses: ["gist"]
+        });})
+</script>
+
+    
+</article>
+
+    
+
+    
+
+     
+    
+        
+    <script
+  src="https://beaudar.lipk.org/client.js"
+  repo="https://github.com/jianyestudy/yydsblog.git"
+  issue-term="pathname"
+  
+  theme="github-light"
+  crossorigin="anonymous"
+  async
+></script>
+
+<style>
+  .beaudar {
+    max-width: unset;
+  }
+</style>
+
+<script>
+  let beaudarLoaded = false;
+
+  function setBeaudarTheme(theme) {
+    let beaudar = document.querySelector(".beaudar iframe");
+    if (beaudar) {
+      beaudar.contentWindow.postMessage(
+        {
+          type: "set-theme",
+          theme: `github-${theme}`,
+        },
+        "https://beaudar.lipk.org"
+      );
+    }
+  }
+
+  addEventListener("message", (event) => {
+    if (event.origin !== "https://beaudar.lipk.org") return;
+    
+    beaudarLoaded = true;
+    setBeaudarTheme(document.documentElement.dataset.scheme);
+  });
+
+  window.addEventListener("onColorSchemeChange", (e) => {
+    if (!beaudarLoaded) return;
+    setBeaudarTheme(e.detail);
+  });
+</script>
+
+
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+        2025 2025
+    </section>
+    
+    <section class="powerby">
+        使用 <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> 构建 <br />
+        主题 <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.30.0">Stack</a></b> 由 <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a> 设计
+    </section>
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.70253eb92682ef0e344a9a441ce6401760dfb761409efe4b4bdfdb42970483b2.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>
